@@ -10,42 +10,20 @@ eslint-disable
       <b-button @click="deleteFile(file._id, index)" class="pull-right">Delete</b-button>
       </div>
     </b-card>
-    <!-- <div> -->
     <br />
     <div class="links text-center">
       <div>{{ file_message }}</div>
       <input type="file" multiple @change="fileChanged" />
       <a tabindex="1" class="button--green" @click="sendFiles">Send files</a>
     </div>
-    <!--
-      <h1 class="title">
-        Share Clipboard
-      </h1>
-      <h2 class="subtitle">
-        App to share clipboard across devices
-      </h2>
-      <div>{{ message }}</div>
-      <div class="links">
-        <a tabindex="1" class="button--green" @click="sendClipboard">
-          Send clipboard
-        </a>
-        <a tabindex="1" class="button--grey" @click="receiveClipboard">
-          Receive clipboard
-        </a>
-      </div>
-    </div>-->
   </div>
 </template>
 
 <script>
-import Logo from "~/components/Logo.vue";
 import axios from "~/plugins/axios";
 const FormData = require("form-data");
 let context;
 export default {
-  components: {
-    Logo
-  },
   created() {
     context = this;
   },
