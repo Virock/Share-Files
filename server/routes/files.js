@@ -31,7 +31,7 @@ router.post("/", upload.array("files"), async function(req, res, next) {
       const move_files_promise = fs_rename_file(
         req.files[i].path,
         `${process.env.FILE_STORAGE_LOCATION}\\${req.files[i].filename}`
-      );
+      ).catch(function(err){console.log(err)});
       promises.push(move_files_promise);
       //Add file to database
       files_to_add_to_database.push(req.files[i]);
