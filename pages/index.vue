@@ -6,14 +6,16 @@ eslint-disable
     </b-jumbotron>
     <b-card v-for="(file, index) in data" :value="file.value" :key="file.value">
       <div class="row">
-      <b-card-text class="col-md-11"><a :href="'/api/files/' + file._id">{{file.originalname}}</a></b-card-text>
-      <b-button @click="deleteFile(file._id, index)" class="pull-right">Delete</b-button>
+        <b-card-text class="col-md-11">
+          <a :href="'/api/files/' + file._id">{{file.originalname}}</a>
+        </b-card-text>
+        <b-button @click="deleteFile(file._id, index)" class="pull-right">Delete</b-button>
       </div>
     </b-card>
     <br />
     <div class="links text-center">
       <div>{{ file_message }}</div>
-      <input type="file" multiple @change="fileChanged" />
+      <input type="file" multiple @change="fileChanged" id="file_input_field" />
       <a tabindex="1" class="button--green" @click="sendFiles">Send files</a>
     </div>
   </div>
@@ -52,17 +54,16 @@ export default {
         console.log("Error occured while getting files");
         console.log(err.error);
       });
-      return { data };
+    return { data };
   },
   methods: {
     async fileChanged(event) {
       this.files = event.target.files;
-      // console.log(this.files);
     },
     async sendFiles() {
       const form_data = new FormData();
       for (let i = 0; i < this.files.length; i++)
-      form_data.append("files", this.files[i]);
+        form_data.append("files", this.files[i]);
       axios
         .post("/api/files", form_data, {
           headers: {
@@ -70,13 +71,13 @@ export default {
           }
         })
         .then(function() {
-          context.file_message = "File(s) successfully uploaded";
-          setTimeout(function() {
-            context.file_message = "";
-          }, 3000);
+          //Clear the files input field
+          document.getElementById("file_input_field").value = null;
+          //Refresh the page
+          location.reload();
         })
         .catch(function(err) {
-          console.log(err)
+          console.log(err);
           context.file_message = "Error occured while uploading file(s)";
           setTimeout(function() {
             context.file_message = "";
@@ -84,38 +85,19 @@ export default {
         });
     },
     async deleteFile(id, index) {
-      axios.delete(`/api/files/${id}`)
+      axios
+        .delete(`/api/files/${id}`)
         .then(function() {
-         context.data.splice(index, 1);
+          context.data.splice(index, 1);
         })
         .catch(function(err) {
-          console.log(err)
+          console.log(err);
           context.file_message = "Error occured while deleting file";
           setTimeout(function() {
             context.file_message = "";
           }, 3000);
         });
-    },
-    async sendClipboard() {
-      const clipboard_text = await navigator.clipboard.readText();
-      const res = await axios.post(`/api/data`, { data: clipboard_text });
-      context.message = "Clipboard sent successfully";
-      setTimeout(function() {
-        context.message = "";
-      }, 3000);
-      //Show notification that text has been sent
-    },
-    async receiveClipboard() {
-      const res = await axios.get(`/api/data`);
-      await navigator.clipboard.writeText(res.data.value);
-      context.message = "Clipboard received received";
-      setTimeout(function() {
-        context.message = "";
-      }, 3000);
     }
-    //Send this device's clipboard to an api endpoint
-    // axios.post(`/api/data`, {data: })
-    //Api should save clipboard in database
   },
   data() {
     return {
