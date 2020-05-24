@@ -23,7 +23,7 @@ async function start() {
     await nuxt.ready();
   }
 
-  app.use(express.json());
+  app.use(express.json({limit: "50mb"}));
 
   mongoose.connection.on("connected", () =>
     console.log("Mongoose connected")
