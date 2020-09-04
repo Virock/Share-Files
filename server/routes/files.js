@@ -13,7 +13,7 @@ const upload = multer({
   dest: os.tmpdir(),
   limits: {fieldSize: 25 * 1024 * 1024 * 1024}
 });
-const NodeSSH = require('node-ssh')
+const NodeSSH = require('node-ssh').NodeSSH;
 
 
 const router = Router();

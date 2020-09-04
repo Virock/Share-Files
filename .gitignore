@@ -90,4 +90,5 @@ sw.*
 *.swp
 
 user_data/
+
 secret.js
