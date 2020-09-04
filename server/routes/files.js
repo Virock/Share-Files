@@ -80,9 +80,26 @@ router.delete("/:id", async function (req, res, next) {
   );
   const delete_file_from_database_promise = file.remove();
   const promises = [delete_file_promise, delete_file_from_database_promise];
+  for(let i = 0; i < secret.servers.length; i++) {
+    if (secret.servers[i].name != os.hostname()) {
+      promises.push(deleteFileFromServer(secret.servers[i], file.filename));
+    }
+  }
   await Promise.all(promises);
   res.json({message: "Success"});
 });
+
+async function deleteFileFromServer(server, filename)
+{
+  const ssh = new NodeSSH()
+  await ssh.connect({
+    host: server.ip,
+    username: server.username,
+    password: server.password
+  });
+  await ssh.execCommand("rm " + filename, { cwd:'/home/Share-Files/user_data' });
+  await ssh.dispose();
+}
 
 router.get("/:id", async function (req, res, next) {
   const file = await File.findById(req.params.id);
