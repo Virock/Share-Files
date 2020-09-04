@@ -34,7 +34,9 @@ async function start() {
   mongoose.connect(process.env.DBURL, {
     useCreateIndex: true,
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
+    useFindAndModify: false,
+    replicaSet: "Virock-ReplicaSet"
   });
 
   const fileRouter = require("./routes/files");
