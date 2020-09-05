@@ -9,6 +9,20 @@ let fileSchema = new mongoose.Schema({
   destination: String,
   filename: String,
   path: String,
-  size: Number
+  size: Number,
+  location: [
+    {
+      name: String
+    }
+  ],
+  deleted: {
+    type: Boolean,
+    default: false
+  },
+  deleted_on: [
+    {
+      name: String
+    }
+  ]
 });
 module.exports = mongoose.model("File", fileSchema);

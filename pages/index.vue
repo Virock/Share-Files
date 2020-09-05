@@ -1,4 +1,3 @@
-eslint-disable
 <template>
   <div class="container">
     <b-jumbotron>
@@ -16,7 +15,7 @@ eslint-disable
     <div class="links text-center">
       <div>{{ file_message }}</div>
       <input type="file" multiple @change="fileChanged" id="file_input_field" />
-      <a tabindex="1" class="button--green" @click="sendFiles">Send files</a>
+      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? "Uploading...": "Send files"}}</a>
     </div>
   </div>
 </template>
@@ -51,7 +50,7 @@ export default {
         data = res.data;
       })
       .catch(function(err) {
-        console.log("Error occured while getting files");
+        console.log("Error occurred while getting files");
         console.log(err.error);
       });
     return { data };
@@ -64,6 +63,7 @@ export default {
       const form_data = new FormData();
       for (let i = 0; i < this.files.length; i++)
         form_data.append("files", this.files[i]);
+      context.working = true;
       axios
         .post("/api/files", form_data, {
           headers: {
@@ -75,10 +75,12 @@ export default {
           document.getElementById("file_input_field").value = null;
           //Refresh the page
           location.reload();
+          context.working = false;
         })
         .catch(function(err) {
+          context.working = false;
           console.log(err);
-          context.file_message = "Error occured while uploading file(s)";
+          context.file_message = "Error occurred while uploading file(s)";
           setTimeout(function() {
             context.file_message = "";
           }, 3000);
@@ -92,7 +94,7 @@ export default {
         })
         .catch(function(err) {
           console.log(err);
-          context.file_message = "Error occured while deleting file";
+          context.file_message = "Error occurred while deleting file";
           setTimeout(function() {
             context.file_message = "";
           }, 3000);
@@ -103,7 +105,8 @@ export default {
     return {
       message: "",
       file_message: "",
-      files: null
+      files: null,
+      working: false
     };
   }
 };

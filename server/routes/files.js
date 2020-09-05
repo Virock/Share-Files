@@ -39,6 +39,7 @@ router.post("/", upload.array("files"), async function (req, res, next) {
       });
       promises.push(move_files_promise);
       //Add file to database
+      req.files[i].location = [{name: os.hostname()}];
       files_to_add_to_database.push(req.files[i]);
     }
     promises.push(File.create(files_to_add_to_database));
@@ -46,10 +47,8 @@ router.post("/", upload.array("files"), async function (req, res, next) {
     //Return success message
     promises = [];
     //Loop through servers, if this server is not us, copy this file into it
-    for(let i = 0; i < secret.servers.length; i++)
-    {
-      if (secret.servers[i].name != os.hostname())
-      {
+    for (let i = 0; i < secret.servers.length; i++) {
+      if (secret.servers[i].name != os.hostname()) {
         promises.push(copyFileIntoServer(secret.servers[i], req.files));
       }
     }
@@ -58,16 +57,22 @@ router.post("/", upload.array("files"), async function (req, res, next) {
   }
 });
 
-async function copyFileIntoServer(server, files){
+async function copyFileIntoServer(server, files) {
   const ssh = new NodeSSH()
   await ssh.connect({
     host: server.ip,
     username: server.username,
     password: server.password
   });
-  for (let i = 0; i < files.length; i++)
-  {
-    await ssh.putFile(`${process.env.FILE_STORAGE_LOCATION}${files[i].filename}`, `/home/Share-Files/user_data/${files[i].filename}`);
+  for (let i = 0; i < files.length; i++) {
+    await ssh.putFile(`${process.env.FILE_STORAGE_LOCATION}${files[i].filename}`, `/home/Share-Files/user_data/${files[i].filename}`)
+      .then(async function () {
+        //If successful, add this hostname to database
+        await File.findOneAndUpdate({filename: files[i].filename}, {"$push": {location: {name: server.name}}})
+      })
+      .catch(function () {
+
+      });
   }
   await ssh.dispose();
 }
@@ -78,9 +83,13 @@ router.delete("/:id", async function (req, res, next) {
   const delete_file_promise = promisified_fs_unlink(
     `${process.env.FILE_STORAGE_LOCATION}${file.filename}`
   );
-  const delete_file_from_database_promise = file.remove();
+  const delete_file_from_database_promise = File.findByIdAndUpdate(file._id,
+    {
+      "$push": {deleted_on: {name: os.hostname()}},
+      deleted: true
+    });
   const promises = [delete_file_promise, delete_file_from_database_promise];
-  for(let i = 0; i < secret.servers.length; i++) {
+  for (let i = 0; i < secret.servers.length; i++) {
     if (secret.servers[i].name != os.hostname()) {
       promises.push(deleteFileFromServer(secret.servers[i], file.filename));
     }
@@ -89,15 +98,24 @@ router.delete("/:id", async function (req, res, next) {
   res.json({message: "Success"});
 });
 
-async function deleteFileFromServer(server, filename)
-{
+async function deleteFileFromServer(server, filename) {
   const ssh = new NodeSSH()
   await ssh.connect({
     host: server.ip,
     username: server.username,
     password: server.password
   });
-  await ssh.execCommand("rm " + filename, { cwd:'/home/Share-Files/user_data' });
+  await ssh.execCommand("rm " + filename, {cwd: '/home/Share-Files/user_data'})
+    .then(async function(){
+      await File.findOneAndUpdate({filename: filename},
+        {
+          "$push": {deleted_on: {name: server.name}},
+          deleted: true
+        });
+    })
+    .catch(function(){
+
+    });
   await ssh.dispose();
 }
 
@@ -108,7 +126,7 @@ router.get("/:id", async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   //Get files in database
-  const data = await File.find({});
+  const data = await File.find({deleted: false});
   res.json(data);
 });
 

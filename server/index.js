@@ -3,6 +3,10 @@ const consola = require("consola");
 const mongoose = require("mongoose");
 const { Nuxt, Builder } = require("nuxt");
 const app = express();
+const CronJob = require("cron").CronJob;
+const get_missing_files = require("../cron_jobs/get_missing_files");
+const delete_files = require("../cron_jobs/delete_files");
+const remove_deleted_files = require("../cron_jobs/remove_deleted_files");
 require("dotenv").config();
 
 // Import and Set Nuxt.js options
@@ -22,6 +26,25 @@ async function start() {
   } else {
     await nuxt.ready();
   }
+
+  //Every 5 minutes
+  const job1 = new CronJob("*/5 * * * *", async function() {
+    await get_missing_files.run();
+  });
+
+  //Every day at midnight
+  const job2 = new CronJob("0 0 0 * * *", async function() {
+    await delete_files.run();
+  });
+
+  //Everyday at midnight
+  const job3 = new CronJob("0 0 0 * * *", async function() {
+    await remove_deleted_files.run();
+  });
+
+  job1.start();
+  job2.start();
+  job3.start();
 
   app.use(express.json({limit: "50mb"}));
 
