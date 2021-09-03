@@ -88,7 +88,6 @@ router.delete("/:id", async function (req, res, next) {
   }
   await File.findByIdAndUpdate(file._id,
     {
-      "$push": {deleted_on: {name: os.hostname()}},
       deleted: true
     });
   res.json({message: "Success"});

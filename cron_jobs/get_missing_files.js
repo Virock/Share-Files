@@ -45,7 +45,7 @@ async function run() {
   running = true;
   //Check the database for files that are not in this server
   //Get 100 of them
-  const files = await File.find({"location.name": {"$ne": os.hostname()}}).limit(100);
+  const files = await File.find({deleted: false, "location.name": {"$ne": os.hostname()}}).limit(100);
   //Try to get those files from the servers where they are present
   //When gotten, update database saying that we have the file
   await getFilesFromServer(files);

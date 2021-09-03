@@ -13,7 +13,7 @@ async function run() {
   running = true;
   //Check the database for files that are deleted but are on this server
   //Get 100 of them
-  const files = await File.find({"deleted_on.name": {"$ne": os.hostname()}}).limit(100);
+  const files = await File.find({deleted: true, "deleted_on.name": {"$ne": os.hostname()}}).limit(100);
   //When gotten, delete the file and if successful, update the database that we have deleted it
   for (const file of files) {
     await promisified_fs_unlink(`${process.env.FILE_STORAGE_LOCATION}${file.filename}`)
