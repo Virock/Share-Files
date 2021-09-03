@@ -14,6 +14,7 @@ const upload = multer({
   limits: {fieldSize: 25 * 1024 * 1024 * 1024}
 });
 const NodeSSH = require('node-ssh').NodeSSH;
+const axios = require("axios");
 
 
 const router = Router();
@@ -45,14 +46,15 @@ router.post("/", upload.array("files"), async function (req, res, next) {
     promises.push(File.create(files_to_add_to_database));
     await Promise.all(promises);
     //Return success message
-    promises = [];
-    //Loop through servers, if this server is not us, copy this file into it
-    for (let i = 0; i < secret.servers.length; i++) {
-      if (secret.servers[i].name != os.hostname()) {
-        promises.push(copyFileIntoServer(secret.servers[i], req.files));
-      }
-    }
-    await Promise.all(promises);
+    //On upload, place file on only this server
+    // promises = [];
+    // //Loop through servers, if this server is not us, copy this file into it
+    // for (let i = 0; i < secret.servers.length; i++) {
+    //   if (secret.servers[i].name != os.hostname()) {
+    //     promises.push(copyFileIntoServer(secret.servers[i], req.files));
+    //   }
+    // }
+    // await Promise.all(promises);
     res.json({message: "Success"});
   }
 });
@@ -89,11 +91,13 @@ router.delete("/:id", async function (req, res, next) {
       deleted: true
     });
   const promises = [delete_file_promise, delete_file_from_database_promise];
-  for (let i = 0; i < secret.servers.length; i++) {
-    if (secret.servers[i].name != os.hostname()) {
-      promises.push(deleteFileFromServer(secret.servers[i], file.filename));
-    }
-  }
+  //On delete, delete from only this server
+
+  // for (let i = 0; i < secret.servers.length; i++) {
+  //   if (secret.servers[i].name != os.hostname()) {
+  //     promises.push(deleteFileFromServer(secret.servers[i], file.filename));
+  //   }
+  // }
   await Promise.all(promises);
   res.json({message: "Success"});
 });
@@ -121,13 +125,56 @@ async function deleteFileFromServer(server, filename) {
 
 router.get("/:id", async function (req, res, next) {
   const file = await File.findById(req.params.id);
-  res.download(`${process.env.FILE_STORAGE_LOCATION}${file.filename}`, file.originalname);
+  //If file is on me give to client normally
+  //If file is located on me and not deleted
+  let file_located_on_me = false;
+  if (file.deleted)
+  {
+    res.status(404).json({message: "File has been deleted"});
+    return;
+  }
+  for (let i = 0; i < file.location.length; i++)
+  {
+    const this_location = file.location[i];
+    if (this_location.name === os.hostname())
+    {
+      file_located_on_me = true;
+      break;
+    }
+  }
+  if (file_located_on_me)
+    res.download(`${process.env.FILE_STORAGE_LOCATION}${file.filename}`, file.originalname);
+  else
+  {
+    //If file is on a different server, get from server
+    let server_with_file;
+    for (let i = 0; i < file.location.length; i++)
+      for (let j = 0; j < secret.servers.length; j++)
+      {
+        if (file.location[i].name === secret.servers[j].name)
+        {
+          server_with_file = secret.servers[j];
+          break;
+        }
+      }
+    const url = `${server_with_file.url}/api/files/${req.params.id}`;
+    const response = await axios.get(url, {responseType: "stream"});
+    res.writeHead(response.status, response.headers);
+    response.data.pipe(res);
+  }
+
 });
 
 router.get("/", async function (req, res, next) {
   //Get files in database
-  const data = await File.find({deleted: false});
+  const data = await File.find({deleted: false}).sort({"$natural": -1});
   res.json(data);
+});
+
+router.delete("/", async function (req, res, next) {
+  //Mark all files as deleted
+  await File.updateMany({deleted: false}, {"$set": {deleted: true}})
+  res.json({message: "Success"});
 });
 
 module.exports = router;

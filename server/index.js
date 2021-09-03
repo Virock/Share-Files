@@ -27,24 +27,14 @@ async function start() {
     await nuxt.ready();
   }
 
-  //Every 5 minutes
-  const job1 = new CronJob("*/5 * * * *", async function() {
-    await get_missing_files.run();
-  });
-
   //Every day at midnight
-  const job2 = new CronJob("0 0 0 * * *", async function() {
+  const jobs = new CronJob("0 0 0 * * *", async function() {
+    await get_missing_files.run();
     await delete_files.run();
-  });
-
-  //Everyday at midnight
-  const job3 = new CronJob("0 0 0 * * *", async function() {
     await remove_deleted_files.run();
   });
 
-  job1.start();
-  job2.start();
-  job3.start();
+  jobs.start();
 
   app.use(express.json({limit: "50mb"}));
 

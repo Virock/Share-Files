@@ -59,6 +59,12 @@ module.exports = {
     /*
     ** You can extend webpack config here
     */
+    devMiddleware: {
+      headers: {
+        'Cache-Control': 'no-store',
+        Vary: '*'
+      }
+    },
     extend (config, ctx) {
     }
   }

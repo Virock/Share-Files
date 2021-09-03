@@ -3,6 +3,13 @@
     <b-jumbotron>
       <H1>Share files</H1>
     </b-jumbotron>
+    <br/>
+    <div class="links text-center">
+      <div>{{ file_message }}</div>
+      <input type="file" multiple @change="fileChanged" id="file_input_field" />
+      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? "Uploading...": "Send files"}}</a>
+    </div>
+    <br/>
     <b-card v-for="(file, index) in data" :value="file.value" :key="file.value">
       <div class="row">
         <b-card-text class="col-md-11">
@@ -12,11 +19,10 @@
       </div>
     </b-card>
     <br />
-    <div class="links text-center">
-      <div>{{ file_message }}</div>
-      <input type="file" multiple @change="fileChanged" id="file_input_field" />
-      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? "Uploading...": "Send files"}}</a>
+    <div class="links text-center" v-if="data && data.length > 0">
+      <a tabindex="1" class="button--red" @click="deleteAll">{{deleting ? "Deleting...": "Delete All Files"}}</a>
     </div>
+    <br/>
   </div>
 </template>
 
@@ -29,17 +35,17 @@ export default {
     context = this;
   },
   async asyncData({
-    isDev,
-    route,
-    store,
-    env,
-    params,
-    query,
-    req,
-    res,
-    redirect,
-    error
-  }) {
+                    isDev,
+                    route,
+                    store,
+                    env,
+                    params,
+                    query,
+                    req,
+                    res,
+                    redirect,
+                    error
+                  }) {
     //Read all files in database
     //Return to this page
     //If error, show error
@@ -58,6 +64,19 @@ export default {
   methods: {
     async fileChanged(event) {
       this.files = event.target.files;
+    },
+    async deleteAll(){
+      context.deleting = true;
+      axios.delete("/api/files/")
+        .then(function(res){
+          location.reload();
+        })
+      .catch(function(err)
+      {
+        console.log(err);
+        alert("Something went wrong");
+        context.deleting = false;
+      })
     },
     async sendFiles() {
       const form_data = new FormData();
@@ -106,7 +125,8 @@ export default {
       message: "",
       file_message: "",
       files: null,
-      working: false
+      working: false,
+      deleting: false
     };
   }
 };
