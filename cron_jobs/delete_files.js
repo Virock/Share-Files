@@ -20,6 +20,8 @@ async function run() {
       .then(function () {
         File.findOneAndUpdate({filename: file.filename}, {"$push": {deleted_on: {name: os.hostname()}}})
       })
+      .catch(function(err)
+      {})
   }
   running = false;
 }
