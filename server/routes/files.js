@@ -81,24 +81,16 @@ async function copyFileIntoServer(server, files) {
 
 router.delete("/:id", async function (req, res, next) {
   const file = await File.findById(req.params.id);
-  //Delete this file from file system and database
-  const delete_file_promise = promisified_fs_unlink(
-    `${process.env.FILE_STORAGE_LOCATION}${file.filename}`
-  );
-  const delete_file_from_database_promise = File.findByIdAndUpdate(file._id,
+  if (file.deleted)
+  {
+    res.json({message: "Doesn't exist"});
+    return;
+  }
+  await File.findByIdAndUpdate(file._id,
     {
       "$push": {deleted_on: {name: os.hostname()}},
       deleted: true
     });
-  const promises = [delete_file_promise, delete_file_from_database_promise];
-  //On delete, delete from only this server
-
-  // for (let i = 0; i < secret.servers.length; i++) {
-  //   if (secret.servers[i].name != os.hostname()) {
-  //     promises.push(deleteFileFromServer(secret.servers[i], file.filename));
-  //   }
-  // }
-  await Promise.all(promises);
   res.json({message: "Success"});
 });
 
