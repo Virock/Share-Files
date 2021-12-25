@@ -158,7 +158,7 @@ router.get("/:id", async function (req, res, next) {
             });
           if (bad_server) {
             if (i == file.location.length - 1) {
-              res.end();
+              res.end(`The server with this file is unavailable. Please try again later`);
               end_loop = true;
               break;
             }
