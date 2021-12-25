@@ -137,21 +137,42 @@ router.get("/:id", async function (req, res, next) {
     res.download(`${process.env.FILE_STORAGE_LOCATION}${file.filename}`, file.originalname);
   else
   {
+    let bad_server = false;
+    //Handle situation where the only server that has the file is unavailable
+    //Handle situation where the first server has failed
     //If file is on a different server, get from server
     let server_with_file;
-    for (let i = 0; i < file.location.length; i++)
-      for (let j = 0; j < secret.servers.length; j++)
-      {
-        if (file.location[i].name === secret.servers[j].name)
-        {
+    let end_loop = false;
+    for (let i = 0; i < file.location.length; i++) {
+      if (end_loop)
+        break;
+      for (let j = 0; j < secret.servers.length; j++) {
+        if (end_loop)
+          break;
+        if (file.location[i].name === secret.servers[j].name) {
           server_with_file = secret.servers[j];
+          const url = `${server_with_file.url}/api/files/${req.params.id}`;
+          const response = await axios.get(url, {responseType: "stream"})
+            .catch(function (err) {
+              bad_server = true;
+            });
+          if (bad_server) {
+            if (i == file.location.length - 1) {
+              res.end();
+              end_loop = true;
+              break;
+            }
+            bad_server = false;
+            continue;
+          }
+          res.writeHead(response.status, response.headers);
+          response.data.pipe(res);
+          end_loop = true;
           break;
         }
       }
-    const url = `${server_with_file.url}/api/files/${req.params.id}`;
-    const response = await axios.get(url, {responseType: "stream"});
-    res.writeHead(response.status, response.headers);
-    response.data.pipe(res);
+    }
+
   }
 
 });
