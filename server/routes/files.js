@@ -139,24 +139,30 @@ router.get("/:id", async function (req, res, next) {
   {
     let bad_server = false;
     //Handle situation where the only server that has the file is unavailable
-    //Handle situation where the first server has failed
+    //Handle situation where the first server with this file has failed
     //If file is on a different server, get from server
     let server_with_file;
     let end_loop = false;
+    //Loop through servers with this file
     for (let i = 0; i < file.location.length; i++) {
       if (end_loop)
         break;
+
       for (let j = 0; j < secret.servers.length; j++) {
         if (end_loop)
           break;
+        //Get details about this server
         if (file.location[i].name === secret.servers[j].name) {
           server_with_file = secret.servers[j];
           const url = `${server_with_file.url}/api/files/${req.params.id}`;
+          //Try to get a stream of this file
           const response = await axios.get(url, {responseType: "stream"})
             .catch(function (err) {
+              //If server is unavailable, store bit
               bad_server = true;
             });
           if (bad_server) {
+            //If this is the last server in list, return error
             if (i == file.location.length - 1) {
               res.end(`The server with this file is unavailable. Please try again later`);
               end_loop = true;
@@ -165,6 +171,7 @@ router.get("/:id", async function (req, res, next) {
             bad_server = false;
             continue;
           }
+          //If server in list has the file, stream to user
           res.writeHead(response.status, response.headers);
           response.data.pipe(res);
           end_loop = true;

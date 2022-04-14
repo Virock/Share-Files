@@ -44,12 +44,10 @@ async function start() {
   mongoose.connection.on("disconnected", () =>
     console.log("Mongoose disconnected")
   );
-  mongoose.connect(process.env.DBURL, {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false,
-    replicaSet: "Virock-ReplicaSet"
+  mongoose.connect(process.env.DBURL).catch(function(err){
+    console.log(err.message);
+    console.log(err.stack);
+    throw new Error("Could not connect to database");
   });
 
   const fileRouter = require("./routes/files");
