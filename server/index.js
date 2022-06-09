@@ -57,11 +57,16 @@ async function start() {
   app.use(nuxt.render);
 
   // Listen the server
-  app.listen(process.env.PORT);
+  /*server = */app.listen(process.env.PORT);
   consola.ready({
     message: `Server listening on http://${process.env.HOST}:${process.env.PORT}`,
     badge: true
   });
+
+  /*server.on('connection', function(socket){
+    //10 minutes timeout
+    socket.setTimeout(10*60*1000);
+  })*/
 
   async function shutdown(signal, callback) {
     console.log(`${signal} received.`);

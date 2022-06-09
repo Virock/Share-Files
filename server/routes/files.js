@@ -19,8 +19,9 @@ const axios = require("axios");
 
 const router = Router();
 
-router.post("/", upload.array("files"), async function (req, res, next) {
+router.post("/", async function (req, res, next) {
   req.socket.setTimeout(10 * 60 * 1000); //10 minutes timeout
+  upload.array("files");
   //Check if at least one file was uploaded
   //If not, return error
   if (!req.files || req.files.length < 1) {
