@@ -3,10 +3,6 @@ const consola = require("consola");
 const mongoose = require("mongoose");
 const { Nuxt, Builder } = require("nuxt");
 const app = express();
-const CronJob = require("cron").CronJob;
-const get_missing_files = require("../cron_jobs/get_missing_files");
-const delete_files = require("../cron_jobs/delete_files");
-const remove_deleted_files = require("../cron_jobs/remove_deleted_files");
 require("dotenv").config();
 
 // Import and Set Nuxt.js options
@@ -27,27 +23,16 @@ async function start() {
     await nuxt.ready();
   }
 
-  //Every day at midnight
-  const jobs = new CronJob("0 0 0 * * *", async function() {
-    await get_missing_files.run();
-    await delete_files.run();
-    await remove_deleted_files.run();
-  });
-
-  jobs.start();
-
   app.use(express.json({limit: "50mb"}));
 
-  mongoose.connection.on("connected", () =>
-    console.log("Mongoose connected")
-  );
-  mongoose.connection.on("disconnected", () =>
-    console.log("Mongoose disconnected")
-  );
-  mongoose.connect(process.env.DBURL).catch(function(err){
-    console.log(err.message);
-    console.log(err.stack);
-    throw new Error("Could not connect to database");
+  mongoose.connection.on("connected", () => console.log("Mongoose Connected"));
+  mongoose.connection.on("disconnected", () => console.log("Mongoose Disconnected"));
+
+  mongoose.connect(process.env.DBURL, {
+    useCreateIndex: true,
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    useFindAndModify: false
   });
 
   const fileRouter = require("./routes/files");
