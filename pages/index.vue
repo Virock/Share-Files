@@ -7,7 +7,7 @@
     <div class="links text-center">
       <div>{{ file_message }}</div>
       <input type="file" multiple @change="fileChanged" id="file_input_field" />
-      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? "Uploading...": "Send files"}}</a>
+      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? `Uploaded ${progress}%`: "Send files"}}</a>
     </div>
     <br/>
     <b-card v-for="(file, index) in data" :value="file.value" :key="file.value">
@@ -85,6 +85,10 @@ export default {
       context.working = true;
       axios
         .post("/api/files", form_data, {
+          onUploadProgress: (progressEvent) => {
+            const {loaded, total} = progressEvent;
+            context.progress = Math.floor((loaded * 100) / total);
+          },
           headers: {
             "Content-Type": "multipart/form-data"
           }
@@ -122,6 +126,7 @@ export default {
   },
   data() {
     return {
+      progress: 0,
       message: "",
       file_message: "",
       files: null,
