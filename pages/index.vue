@@ -102,7 +102,6 @@ export default {
         })
         .catch(function(err) {
           context.working = false;
-          console.error(err);
           context.file_message = "Error occurred while uploading file(s)";
           setTimeout(function() {
             context.file_message = "";

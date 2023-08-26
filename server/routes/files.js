@@ -1,4 +1,3 @@
-const {Router} = require("express");
 const File = require("../../models/File");
 require("dotenv").config();
 const request = require("request").defaults({rejectUnauthorized: false});
@@ -6,8 +5,11 @@ const request = require("request").defaults({rejectUnauthorized: false});
 const axios = require("axios");
 const {once} = require("events");
 
-
+const Router = require("express");
+const express = require("express");
 const router = Router();
+
+router.use(express.json({limit: "50mb"}));
 
 router.post("/", async function (req, res, next) {
   //Simply pass the files to the storage server

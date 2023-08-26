@@ -1,6 +1,6 @@
 require("dotenv").config();
 module.exports = {
-  mode: 'universal',
+  // mode: 'universal',
   /*
   ** Headers of the page
   */
@@ -53,6 +53,10 @@ module.exports = {
   /*
   ** Build configuration
   */
+  serverMiddleware: [
+    {path: "/startup", handler: "~/server/index.js"},
+    {path: "/api/files", handler: "~/server/routes/files.js"}
+  ],
   build: {
     /*
     ** You can extend webpack config here

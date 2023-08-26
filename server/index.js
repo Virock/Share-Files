@@ -1,30 +1,9 @@
 const express = require("express");
-const consola = require("consola");
 const mongoose = require("mongoose");
-const { Nuxt, Builder } = require("nuxt");
 const app = express();
 require("dotenv").config();
 
-// Import and Set Nuxt.js options
-const config = require("../nuxt.config.js");
-config.dev = process.env.NODE_ENV !== "production";
-
-async function start() {
-  // Init Nuxt.js
-  const nuxt = new Nuxt(config);
-
-  const { host, port } = nuxt.options.server;
-
-  // Build only in dev mode
-  if (config.dev) {
-    const builder = new Builder(nuxt);
-    await builder.build();
-  } else {
-    await nuxt.ready();
-  }
-
   app.use(express.json({limit: "50mb"}));
-
   mongoose.connection.on("connected", () => console.log("Mongoose Connected"));
   mongoose.connection.on("disconnected", () => console.log("Mongoose Disconnected"));
 
@@ -34,24 +13,6 @@ async function start() {
     useUnifiedTopology: true,
     useFindAndModify: false
   });
-
-  const fileRouter = require("./routes/files");
-  app.use("/api/files", fileRouter);
-
-  // Give nuxt middleware to express
-  app.use(nuxt.render);
-
-  // Listen the server
-  const server = app.listen(process.env.PORT);
-  consola.ready({
-    message: `Server listening on http://${process.env.HOST}:${process.env.PORT}`,
-    badge: true
-  });
-
-  server.on('connection', function(socket){
-    //10 minutes timeout
-    socket.setTimeout(10*60*1000);
-  })
 
   async function shutdown(signal, callback) {
     console.log(`${signal} received.`);
@@ -65,5 +26,5 @@ async function start() {
   process.once("SIGUSR2", signal => {
     shutdown(signal, () => process.kill(process.pid, "SIGUSR2"));
   });
-}
-start();
+
+module.exports = app;
