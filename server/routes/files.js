@@ -6,10 +6,10 @@ const axios = require("axios");
 const {once} = require("events");
 
 const Router = require("express");
-const express = require("express");
 const router = Router();
 
-router.use(express.json({limit: "50mb"}));
+router.use(Router.json({limit: "50mb"}));
+router.use(Router.urlencoded({ extended: false, limit: "50mb" }));
 
 router.post("/", async function (req, res, next) {
   //Simply pass the files to the storage server
@@ -59,7 +59,6 @@ router.delete("/:id", async function (req, res, next) {
   // If server deletes file, remove from database
   const headers = {authorization: `Bearer ${process.env.PASSWORD}`};
   await axios.delete(`${process.env.STORAGE_URL}/${file.filename}`, {headers}).catch(function (err) {
-    console.error(err);
     errorOccurred = true;
   });
   if (errorOccurred) {

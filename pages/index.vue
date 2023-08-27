@@ -7,7 +7,7 @@
     <div class="links text-center">
       <div>{{ file_message }}</div>
       <input type="file" multiple @change="fileChanged" id="file_input_field" />
-      <a tabindex="1" class="button--green" @click="sendFiles">{{working ? `Uploaded ${progress}%`: "Send files"}}</a>
+      <button class="btn button--green" @click="sendFiles">{{working ? `Uploaded ${progress}%`: "Send files"}}</button>
     </div>
     <br/>
     <b-card v-for="(file, index) in data" :value="file.value" :key="file.value">
@@ -27,37 +27,24 @@
 </template>
 
 <script>
-import axios from "~/plugins/axios";
 const FormData = require("form-data");
+const axios = require("axios");
 let context;
 export default {
   created() {
     context = this;
   },
-  async asyncData({
-                    isDev,
-                    route,
-                    store,
-                    env,
-                    params,
-                    query,
-                    req,
-                    res,
-                    redirect,
-                    error
-                  }) {
+  async asyncData(ctx) {
     //Read all files in database
     //Return to this page
     //If error, show error
     let data;
     await axios
-      .get("/api/files")
+      .get("https://sharefiles.virock.org/api/files")
       .then(function(res) {
         data = res.data;
       })
       .catch(function(err) {
-        console.log("Error occurred while getting files");
-        console.log(err.error);
       });
     return { data };
   },
@@ -67,13 +54,12 @@ export default {
     },
     async deleteAll(){
       context.deleting = true;
-      axios.delete("/api/files/")
+      context.$axios.$delete("/api/files/")
         .then(function(res){
           location.reload();
         })
       .catch(function(err)
       {
-        console.log(err);
         alert("Something went wrong");
         context.deleting = false;
       })
@@ -84,7 +70,7 @@ export default {
         form_data.append("files", this.files[i]);
       context.working = true;
       axios
-        .post("/api/files", form_data, {
+        .post("https://sharefiles.virock.org/api/files", form_data, {
           onUploadProgress: (progressEvent) => {
             const {loaded, total} = progressEvent;
             context.progress = Math.floor((loaded * 100) / total);
@@ -109,13 +95,12 @@ export default {
         });
     },
     async deleteFile(id, index) {
-      axios
-        .delete(`/api/files/${id}`)
+      context.$axios
+        .$delete(`/api/files/${id}`)
         .then(function() {
           context.data.splice(index, 1);
         })
         .catch(function(err) {
-          console.log(err);
           context.file_message = "Error occurred while deleting file";
           setTimeout(function() {
             context.file_message = "";

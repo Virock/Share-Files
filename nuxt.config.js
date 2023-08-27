@@ -49,6 +49,7 @@ module.exports = {
   ** See https://axios.nuxtjs.org/options
   */
   axios: {
+    baseURL: process.env.HOMEPAGE
   },
   /*
   ** Build configuration

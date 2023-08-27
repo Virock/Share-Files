@@ -1,9 +1,11 @@
 const express = require("express");
 const mongoose = require("mongoose");
+const Router = require("express");
 const app = express();
 require("dotenv").config();
 
   app.use(express.json({limit: "50mb"}));
+  app.use(express.urlencoded({ extended: false, limit: "50mb" }));
   mongoose.connection.on("connected", () => console.log("Mongoose Connected"));
   mongoose.connection.on("disconnected", () => console.log("Mongoose Disconnected"));
 
