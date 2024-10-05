@@ -9,12 +9,9 @@ require("dotenv").config();
   mongoose.connection.on("connected", () => console.log("Mongoose Connected"));
   mongoose.connection.on("disconnected", () => console.log("Mongoose Disconnected"));
 
-  mongoose.connect(process.env.DBURL, {
-    useCreateIndex: true,
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-    useFindAndModify: false
-  });
+const clientOptions = { serverApi: { version: '1', strict: true, deprecationErrors: true } };
+
+  mongoose.connect(process.env.DBURL, clientOptions);
 
   async function shutdown(signal, callback) {
     console.log(`${signal} received.`);

@@ -19,10 +19,12 @@
     "dotenv": "^8.2.0",
     "express": "^4.16.4",
     "form-data": "^4.0.0",
-    "mongoose": "^5.7.12",
+    "mongoose": "^7.1.1",
+    "multer": "^1.4.5-lts.1",
     "nuxt": "^2.0.0",
     "postcss": "^8.4.21",
-    "request": "^2.88.2"
+    "request": "^2.88.2",
+    "vue-loader": "^15.4.2"
   },
   "devDependencies": {
     "@nuxt/types": "^0.5.9",

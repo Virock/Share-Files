@@ -29,6 +29,7 @@
 <script>
 const FormData = require("form-data");
 const axios = require("axios");
+const clientSecret = require("../clientSecret");
 let context;
 export default {
   created() {
@@ -40,7 +41,7 @@ export default {
     //If error, show error
     let data;
     await axios
-      .get("https://sharefiles.virock.org/api/files")
+      .get(`${clientSecret.homepage}/api/files`)
       .then(function(res) {
         data = res.data;
       })
@@ -54,7 +55,7 @@ export default {
     },
     async deleteAll(){
       context.deleting = true;
-      context.$axios.$delete("/api/files/")
+      axios.delete(`${clientSecret.homepage}/api/files/`)
         .then(function(res){
           location.reload();
         })
@@ -70,7 +71,7 @@ export default {
         form_data.append("files", this.files[i]);
       context.working = true;
       axios
-        .post("https://sharefiles.virock.org/api/files", form_data, {
+        .post("/api/files", form_data, {
           onUploadProgress: (progressEvent) => {
             const {loaded, total} = progressEvent;
             context.progress = Math.floor((loaded * 100) / total);
@@ -96,7 +97,7 @@ export default {
     },
     async deleteFile(id, index) {
       context.$axios
-        .$delete(`/api/files/${id}`)
+        .$delete(`${clientSecret.homepage}/api/files/${id}`)
         .then(function() {
           context.data.splice(index, 1);
         })
