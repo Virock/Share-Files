@@ -92,3 +92,4 @@ sw.*
 user_data/
 
 secret.js
+/files/
