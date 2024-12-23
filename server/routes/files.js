@@ -122,6 +122,12 @@ router.use(Router.urlencoded({extended: false, limit: "50mb"}));
 
 router.use(cookieParser());
 
+router.get("/", async function (req, res, next) {
+  //Get files in database
+  const data = await File.find().sort({"$natural": -1});
+  res.json(data);
+});
+
 async function denyAllWithoutPassword(req, res, next){
   if (req.cookies["user"] !== process.env.USER_PASSWORD)
   {
@@ -167,12 +173,6 @@ router.get("/:id", async function (req, res, next) {
   {
     res.status(400).json({message: "Doesn't exist"});
   }
-});
-
-router.get("/", async function (req, res, next) {
-  //Get files in database
-  const data = await File.find().sort({"$natural": -1});
-  res.json(data);
 });
 
 router.delete("/", async function (req, res, next) {
