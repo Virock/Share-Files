@@ -1,5 +1,6 @@
 const File = require("../../models/File");
 require("dotenv").config();
+const cookieParser = require("cookie-parser");
 const fs = require("fs/promises");
 // const request = require("request").defaults({rejectUnauthorized: false});
 const multer = require('multer')
@@ -118,6 +119,19 @@ router.use(Router.urlencoded({extended: false, limit: "50mb"}));
 //   await File.deleteMany({});
 //   res.json({message: "Success"});
 // });
+
+router.use(cookieParser());
+
+async function denyAllWithoutPassword(req, res, next){
+  if (req.cookies["user"] !== process.env.USER_PASSWORD)
+  {
+    res.status(401).end();
+    return;
+  }
+  next();
+}
+
+router.use(denyAllWithoutPassword);
 
 router.post("/", upload.array("files"), async function (req, res, next) {
   //Simply pass the files to the storage server

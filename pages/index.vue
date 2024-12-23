@@ -45,7 +45,10 @@ export default {
       .then(function(res) {
         data = res.data;
       })
-      .catch(function(err) {
+      .catch(function (error) {
+        if (error.response.status === 401) {
+          data = [];
+        }
       });
     return { data };
   },
@@ -59,9 +62,12 @@ export default {
         .then(function(res){
           location.reload();
         })
-      .catch(function(err)
+      .catch(function(error)
       {
-        alert("Something went wrong");
+        let message = "Something went wrong";
+        if (error.response.status === 401)
+          message = "You lack authorization";
+        alert(message);
         context.deleting = false;
       })
     },
@@ -87,9 +93,12 @@ export default {
           location.reload();
           context.working = false;
         })
-        .catch(function(err) {
+        .catch(function(error) {
           context.working = false;
-          context.file_message = "Error occurred while uploading file(s)";
+          if (error.response.status === 401)
+            context.file_message = "You lack authorization";
+          else
+            context.file_message = "Error occurred while uploading file(s)";
           setTimeout(function() {
             context.file_message = "";
           }, 3000);
@@ -101,8 +110,11 @@ export default {
         .then(function() {
           context.data.splice(index, 1);
         })
-        .catch(function(err) {
-          context.file_message = "Error occurred while deleting file";
+        .catch(function(error) {
+          if (error.response.status === 401)
+            context.file_message = "You lack authorization";
+          else
+            context.file_message = "Error occurred while deleting file";
           setTimeout(function() {
             context.file_message = "";
           }, 3000);
