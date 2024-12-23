@@ -128,16 +128,16 @@ router.get("/", async function (req, res, next) {
   res.json(data);
 });
 
-async function denyAllWithoutPassword(req, res, next){
-  if (req.cookies["user"] !== process.env.USER_PASSWORD)
-  {
-    res.status(401).end();
-    return;
-  }
-  next();
-}
-
-router.use(denyAllWithoutPassword);
+// async function denyAllWithoutPassword(req, res, next){
+//   if (req.cookies["user"] !== process.env.USER_PASSWORD)
+//   {
+//     res.status(401).end();
+//     return;
+//   }
+//   next();
+// }
+//
+// router.use(denyAllWithoutPassword);
 
 router.post("/", upload.array("files"), async function (req, res, next) {
   //Simply pass the files to the storage server
