@@ -1,8 +1,10 @@
 <template>
   <div class="container">
-    <b-jumbotron>
-      <H1>Share files</H1>
-    </b-jumbotron>
+    <div class="p-1 mb-4 bg-light rounded-3 border">
+      <div class="container-fluid py-5">
+        <h1 class="display-5 fw-bold text-center">Share files</h1>
+      </div>
+    </div>
     <br/>
     <div class="links text-center">
       <div>{{ file_message }}</div>
@@ -10,12 +12,22 @@
       <button class="btn button--green" @click="sendFiles">{{working ? `Uploaded ${progress}%`: "Send files"}}</button>
     </div>
     <br/>
-    <b-card v-for="(file, index) in data" :value="file.value" :key="file.value">
-      <div class="row">
-        <b-card-text class="col-md-11">
-          <a :href="'/api/files/' + file._id">{{file.originalname}}</a>
-        </b-card-text>
-        <b-button @click="deleteFile(file._id, index)" class="pull-right">Delete</b-button>
+    <b-card v-for="(file, index) in data" :value="file.value" :key="file.value" style="margin: 10px">
+      <div class="row align-items-center">
+        <div class="col-md-11">
+          <a :href="'/api/files/' + file.id" class="text-decoration-none">
+            {{ file.originalname }}
+          </a>
+        </div>
+
+        <div class="col-md-1 d-flex justify-content-end">
+          <button
+            type="button"
+            class="btn btn-danger btn-sm"
+            @click="deleteFile(file.id, index)">
+            Delete
+          </button>
+        </div>
       </div>
     </b-card>
     <br />
@@ -58,7 +70,7 @@ export default {
     },
     async deleteAll(){
       context.deleting = true;
-      axios.delete(`${clientSecret.homepage}/api/files/`)
+      this.$axios.delete(`${clientSecret.homepage}/api/files/`)
         .then(function(res){
           location.reload();
         })
@@ -76,7 +88,7 @@ export default {
       for (let i = 0; i < this.files.length; i++)
         form_data.append("files", this.files[i]);
       context.working = true;
-      axios
+      this.$axios
         .post("/api/files", form_data, {
           onUploadProgress: (progressEvent) => {
             const {loaded, total} = progressEvent;
